@@ -18,6 +18,7 @@ module.exports = {
     "",
     "^[./]",
   ],
+  printWidth: 110,
   importOrderParserPlugins: ["typescript", "jsx", "decorators-legacy"],
   plugins: ["@ianvs/prettier-plugin-sort-imports"],
 };
