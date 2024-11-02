@@ -24,7 +24,7 @@ export const authRouter = new Hono<Context>()
       await db.insert(userTable).values({
         id: userId,
         username,
-        password_hash: passwordHash,
+        passwordHash: passwordHash,
       });
 
       const session = await lucia.createSession(userId, { username });
@@ -55,7 +55,7 @@ export const authRouter = new Hono<Context>()
       throw new HTTPException(401, { message: "Incorrect username or password" });
     }
 
-    const validPassword = await Bun.password.verify(password, existingUser.password_hash);
+    const validPassword = await Bun.password.verify(password, existingUser.passwordHash);
 
     if (!validPassword) {
       throw new HTTPException(401, { message: "Incorrect username or password" });
