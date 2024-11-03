@@ -286,6 +286,7 @@ export const postRouter = new Hono<Context>()
           createdAt: getISOFormatDateQuery(commentsTable.createdAt).as("created_at"),
         },
       });
+
       return c.json<PaginatedResponse<Comment[]>>(
         {
           success: true,
