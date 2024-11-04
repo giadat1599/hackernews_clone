@@ -8,7 +8,7 @@ export const Route = createFileRoute("/")({
 
 function HomeComponent() {
   return (
-    <div className="p-2">
+    <div>
       <Button>Hello World</Button>
     </div>
   );

@@ -7,6 +7,11 @@ import { routeTree } from "./routeTree.gen";
 
 import "./global.css";
 
+import { Loader2Icon } from "lucide-react";
+
+import { ErrorComponent } from "./components/error-component";
+import { NotFound } from "./components/not-found";
+
 const queryClient = new QueryClient();
 
 // Set up a Router instance
@@ -17,6 +22,14 @@ const router = createRouter({
   context: {
     queryClient,
   },
+  defaultPendingComponent: () => (
+    <div className="mx-auto mt-8 flex flex-col items-center justify-center">
+      <Loader2Icon className="animate-spin" />
+      <p className="mt-2 text-sm text-muted-foreground">Loading...</p>
+    </div>
+  ),
+  defaultNotFoundComponent: NotFound,
+  defaultErrorComponent: ({ error }) => <ErrorComponent error={error} />,
 });
 
 // Register things for typesafety
