@@ -50,6 +50,7 @@ function Login() {
       const res = await postLogin(value.username, value.password);
       if (res.success) {
         await queryClient.invalidateQueries({ queryKey: ["user"] });
+        await queryClient.invalidateQueries({ queryKey: ["posts"] });
         router.invalidate();
         await navigate({ to: search.redirect });
         return null;

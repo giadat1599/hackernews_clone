@@ -1,6 +1,6 @@
-import { hc } from "hono/client";
+import { hc, InferResponseType } from "hono/client";
 
-import type { ApiRoutes, ErrorResponse, SuccessResponse } from "@/shared/types";
+import type { ApiRoutes, ErrorResponse, Order, SortBy, SuccessResponse } from "@/shared/types";
 
 const client = hc<ApiRoutes>("/", {
   fetch: (input: RequestInfo | URL, init?: RequestInit) =>
@@ -55,4 +55,51 @@ export async function getUser() {
     return data.data.username;
   }
   return null;
+}
+
+interface GetPostsParam {
+  pageParam: number;
+  pagination: {
+    sortBy?: SortBy;
+    order?: Order;
+    author?: string;
+    site?: string;
+  };
+}
+
+export type GetPostsSuccess = InferResponseType<typeof client.posts.$get>;
+
+export async function getPosts({ pageParam = 1, pagination }: GetPostsParam) {
+  const res = await client.posts.$get({
+    query: {
+      page: pageParam.toString(),
+      sortBy: pagination.sortBy,
+      order: pagination.order,
+      author: pagination.author,
+      site: pagination.site,
+    },
+  });
+
+  if (!res.ok) {
+    const data = (await res.json()) as unknown as ErrorResponse;
+    throw new Error(data.error);
+  }
+
+  const data = await res.json();
+  return data;
+}
+
+export async function upvotePost(id: string) {
+  const res = await client.posts[":id"].upvote.$post({
+    param: {
+      id,
+    },
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    return data;
+  }
+  const data = (await res.json()) as unknown as ErrorResponse;
+  throw new Error(data.error);
 }

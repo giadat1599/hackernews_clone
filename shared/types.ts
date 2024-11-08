@@ -1,4 +1,7 @@
+import { z } from "zod";
+
 import type { ApiRoutes } from "../server/index";
+import type { orderSchema, sortBySchema } from "./schemas";
 
 export { type ApiRoutes };
 
@@ -55,3 +58,6 @@ export type PaginatedResponse<T> = Omit<SuccessResponse, "data"> & {
   };
   data: T;
 };
+
+export type SortBy = z.infer<typeof sortBySchema>;
+export type Order = z.infer<typeof orderSchema>;
