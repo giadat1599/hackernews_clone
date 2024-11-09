@@ -35,7 +35,11 @@ export function PostCard({ post, onUpvote }: PostCardProps) {
                   {post.title}
                 </a>
               ) : (
-                <Link to={"/"} className="text-foreground hover:text-primary hover:underline">
+                <Link
+                  to="/post"
+                  search={{ id: post.id }}
+                  className="text-foreground hover:text-primary hover:underline"
+                >
                   {post.title}
                 </Link>
               )}
@@ -66,7 +70,7 @@ export function PostCard({ post, onUpvote }: PostCardProps) {
             <span>·</span>
             <span>{relativeTime(post.createdAt)}</span>
             <span>·</span>
-            <Link to="/" className="hover:underline">
+            <Link to="/post" search={{ id: post.id }} className="hover:underline">
               {post.commentCount} comments
             </Link>
           </div>

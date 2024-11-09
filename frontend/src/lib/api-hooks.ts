@@ -3,7 +3,7 @@ import { InfiniteData, useMutation, useQueryClient } from "@tanstack/react-query
 import { current, produce } from "immer";
 import { toast } from "sonner";
 
-import { Post } from "@/shared/types";
+import { Post, SuccessResponse } from "@/shared/types";
 
 import { GetPostsSuccess, upvotePost } from "./api";
 
@@ -17,13 +17,24 @@ export const useUpvotePost = () => {
   return useMutation({
     mutationFn: upvotePost,
     onMutate: async (variable) => {
-      let prevData;
+      let prevPosts;
+      let prevPost;
       await queryClient.cancelQueries({ queryKey: ["post", Number(variable)] });
 
+      queryClient.setQueryData<SuccessResponse<Post>>(
+        ["post", Number(variable)],
+        produce((draft) => {
+          prevPost = current(draft);
+          if (!draft) {
+            return undefined;
+          }
+          updatePostUpvote(draft.data);
+        }),
+      );
       queryClient.setQueriesData<InfiniteData<GetPostsSuccess>>(
         { queryKey: ["posts"], type: "active" },
         produce((oldData) => {
-          prevData = current(oldData);
+          prevPosts = current(oldData);
           if (!oldData) {
             return undefined;
           }
@@ -38,10 +49,22 @@ export const useUpvotePost = () => {
       );
 
       return {
-        prevData,
+        prevPosts,
+        prevPost,
       };
     },
     onSuccess: (upvoteData, variable) => {
+      queryClient.setQueryData<SuccessResponse<Post>>(
+        ["post", Number(variable)],
+        produce((draft) => {
+          if (!draft) {
+            return undefined;
+          }
+          draft.data.points = upvoteData.data.count;
+          draft.data.isUpvoted = upvoteData.data.isUpvoted;
+        }),
+      );
+
       queryClient.setQueriesData<InfiniteData<GetPostsSuccess>>(
         { queryKey: ["posts"], type: "active" },
         produce((oldData) => {
@@ -66,10 +89,15 @@ export const useUpvotePost = () => {
     },
     onError: (err, variable, context) => {
       console.error(err);
+
       toast.error("Failed to upvote post");
-      if (context?.prevData) {
-        queryClient.setQueriesData({ queryKey: ["posts"], type: "active" }, context.prevData);
+      if (context?.prevPosts) {
+        queryClient.setQueriesData({ queryKey: ["posts"], type: "active" }, context.prevPosts);
       }
+      if (context?.prevPost) {
+        queryClient.setQueryData(["post", Number(variable)], context.prevPost);
+      }
+      queryClient.invalidateQueries({ queryKey: ["post", Number(variable)] });
       queryClient.invalidateQueries({
         queryKey: ["posts"],
       });
