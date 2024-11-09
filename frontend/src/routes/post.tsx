@@ -13,7 +13,7 @@ import { z } from "zod";
 
 import { orderSchema, sortBySchema } from "@/shared/schemas";
 import { getComments, getPost } from "@/lib/api";
-import { useUpvotePost } from "@/lib/api-hooks";
+import { useUpvoteComment, useUpvotePost } from "@/lib/api-hooks";
 import { Card, CardContent } from "@/components/ui/card";
 import { CommentCard } from "@/components/comment-card";
 import { PostCard } from "@/components/post-card";
@@ -80,6 +80,7 @@ function Post() {
   );
 
   const { mutate: upvotePost } = useUpvotePost();
+  const { mutate: upvoteComment } = useUpvoteComment();
 
   const comments = commentsData.pages.flatMap((page) => page.data);
 
@@ -99,7 +100,7 @@ function Post() {
                   depth={0}
                   activeReplyId={activeReplyId}
                   setActiveReplyId={setActiveReplyId}
-                  toggleUpvote={() => {}}
+                  toggleUpvote={upvoteComment}
                   isLast={index === comments.length - 1}
                 />
               ))}

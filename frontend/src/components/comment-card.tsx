@@ -5,6 +5,7 @@ import { ChevronDownIcon, ChevronUpIcon, MessageSquareIcon, MinusIcon, PlusIcon 
 
 import { Comment } from "@/shared/types";
 import { getCommentComments } from "@/lib/api";
+import { useUpvoteComment } from "@/lib/api-hooks";
 import { userQueryOptions } from "@/lib/query-options";
 import { cn, relativeTime } from "@/lib/utils";
 
@@ -14,7 +15,7 @@ interface CommentCardProps {
   activeReplyId: number | null;
   setActiveReplyId: Dispatch<SetStateAction<number | null>>;
   isLast: boolean;
-  toggleUpvote: () => void;
+  toggleUpvote: ReturnType<typeof useUpvoteComment>["mutate"];
 }
 
 export function CommentCard({
@@ -76,6 +77,13 @@ export function CommentCard({
               "flex items-center space-x-1 hover:text-primary",
               isUpvoted ? "text-primary" : "text-muted-foreground",
             )}
+            onClick={() =>
+              toggleUpvote({
+                id: comment.id,
+                postId: comment.postId,
+                parentCommentId: comment.parentCommentId,
+              })
+            }
           >
             <ChevronUpIcon size={14} />
             <span className="font-medium">{comment.points}</span>

@@ -196,3 +196,18 @@ export async function getCommentComments(id: number, page: number = 1, limit: nu
   const data = (await res.json()) as unknown as ErrorResponse;
   throw new Error(data.error);
 }
+
+export async function upvoteComment(id: number) {
+  const res = await client.comments[":id"].upvote.$post({
+    param: {
+      id: id.toString(),
+    },
+  });
+
+  if (res.ok) {
+    const data = await res.json();
+    return data;
+  }
+  const data = (await res.json()) as unknown as ErrorResponse;
+  throw new Error(data.error);
+}
