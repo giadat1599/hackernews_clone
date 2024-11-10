@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 import { Comment, PaginatedResponse, Post, SuccessResponse } from "@/shared/types";
 
-import { GetPostsSuccess, upvoteComment, upvotePost } from "./api";
+import { GetPostsSuccess, postComment, upvoteComment, upvotePost } from "./api";
 
 const updatePostUpvote = (draft: Post) => {
   draft.points += draft.isUpvoted ? -1 : +1;
@@ -186,6 +186,88 @@ export const useUpvoteComment = () => {
       queryClient.invalidateQueries({
         queryKey,
       });
+    },
+  });
+};
+
+export const useCreateComment = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (data: { id: number; content: string; isParent: boolean }) => {
+      return postComment(data.id, data.content, data.isParent);
+    },
+    onMutate: async ({ id, content, isParent }) => {
+      const commentQueryKey = isParent ? ["comments", "comment", id] : ["comments", "post", id];
+
+      let prevData;
+      const user = queryClient.getQueryData<string | null>(["user"]);
+
+      queryClient.setQueriesData<InfiniteData<PaginatedResponse<Comment[]>>>(
+        {
+          queryKey: commentQueryKey,
+        },
+        produce((oldData) => {
+          prevData = current(oldData);
+          if (!oldData) {
+            return undefined;
+          }
+
+          const draftComment: Comment = {
+            content,
+            points: 0,
+            depth: 0,
+            createdAt: new Date().toISOString(),
+            postId: id,
+            commentCount: 0,
+            author: {
+              id: "",
+              username: user ?? "",
+            },
+            id: -1,
+            userId: "",
+            parentCommentId: null,
+            commentUpvotes: [],
+          };
+
+          if (oldData.pages.length > 0) {
+            oldData.pages[0].data.unshift(draftComment);
+          }
+        }),
+      );
+
+      return { prevData };
+    },
+    onSuccess: (data, { id, isParent }) => {
+      const commentQueryKey = isParent ? ["comments", "comment", id] : ["comments", "post", id];
+
+      if (data.success) {
+        queryClient.invalidateQueries({
+          queryKey: ["post", data.data.postId],
+        });
+        queryClient.setQueriesData<InfiniteData<PaginatedResponse<Comment[]>>>(
+          {
+            queryKey: commentQueryKey,
+          },
+          produce((oldData) => {
+            if (!oldData) {
+              return undefined;
+            }
+            if (oldData.pages.length > 0) {
+              // filter out the draft comment
+              oldData.pages[0].data = [data.data, ...oldData.pages[0].data.filter((c) => c.id !== -1)];
+            }
+          }),
+        );
+      }
+    },
+    onError: (err, { id, isParent }, context) => {
+      console.error(err);
+      const commentQueryKey = isParent ? ["comments", "comment", id] : ["comments", "post", id];
+      toast.error("Failed to create comment");
+      if (context?.prevData) {
+        queryClient.setQueriesData({ queryKey: commentQueryKey }, context.prevData);
+      }
+      queryClient.invalidateQueries({ queryKey: commentQueryKey });
     },
   });
 };

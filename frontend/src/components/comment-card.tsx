@@ -9,6 +9,8 @@ import { useUpvoteComment } from "@/lib/api-hooks";
 import { userQueryOptions } from "@/lib/query-options";
 import { cn, relativeTime } from "@/lib/utils";
 
+import { CommentForm } from "./comment-form";
+
 interface CommentCardProps {
   comment: Comment;
   depth: number;
@@ -64,11 +66,18 @@ export function CommentCard({
 
   const isReplying = activeReplyId === comment.id;
   const isUpvoted = comment.commentUpvotes.length > 0;
+  const isDraft = comment.id === -1;
   const comments = commentsData.pages.flatMap((page) => page.data);
   const loadFirstPage = comments.length === 0 && comment.commentCount > 0;
 
   return (
-    <div className={cn(depth > 0 && "ml-4  border-l border-border pl-4", !isLast && "border-b")}>
+    <div
+      className={cn(
+        depth > 0 && "ml-4  border-l border-border pl-4",
+        !isLast && "border-b",
+        isDraft && "pointer-events-none opacity-50",
+      )}
+    >
       <div className="py-2">
         <div className="mb-2 flex items-center space-x-1 text-xs">
           <button
@@ -113,7 +122,11 @@ export function CommentCard({
                 <span>reply</span>
               </button>
             )}
-            {isReplying && <div className="mt-2">COMMENT FORM</div>}
+            {isReplying && (
+              <div className="mt-2">
+                <CommentForm id={comment.id} isParent onSuccess={() => setActiveReplyId(null)} />
+              </div>
+            )}
           </>
         )}
       </div>
