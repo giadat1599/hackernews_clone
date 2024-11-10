@@ -1,4 +1,5 @@
 import { Hono } from "hono";
+import { serveStatic } from "hono/bun";
 import { cors } from "hono/cors";
 import { HTTPException } from "hono/http-exception";
 
@@ -67,6 +68,17 @@ app.onError((err, c) => {
   );
 });
 
-export default app;
+app.get("*", serveStatic({ root: "./frontend/dist" }));
+app.get("*", serveStatic({ path: "./frontend/dist/index.html" }));
+
+const PORT = process.env["PORT"] || 3000;
+
+export default {
+  port: PORT,
+  hostname: "0.0.0.0",
+  fetch: app.fetch,
+};
+
+console.log("Server Running on port", PORT);
 
 export type ApiRoutes = typeof routes;
