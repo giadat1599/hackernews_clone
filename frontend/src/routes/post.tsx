@@ -62,6 +62,19 @@ const commentInfiniteQueryOptions = ({ id, sortBy, order }: z.infer<typeof postS
 export const Route = createFileRoute("/post")({
   component: Post,
   validateSearch: zodSearchValidator(postSearchSchema),
+  loaderDeps: ({ search }) => ({ ...search }),
+  loader: async ({ context, deps: { sortBy, order, id } }) => {
+    await Promise.all([
+      context.queryClient.ensureQueryData(postQueryOptions(id)),
+      context.queryClient.ensureInfiniteQueryData(
+        commentInfiniteQueryOptions({
+          id,
+          order,
+          sortBy,
+        }),
+      ),
+    ]);
+  },
 });
 
 function Post() {
@@ -92,7 +105,7 @@ function Post() {
     <div className="mx-auto max-w-3xl">
       {post && <PostCard post={post.data} onUpvote={(id) => upvotePost(id.toString())} />}
       <div className="mb-4 mt-8">
-        <h2 className="mb-2 text-lg font-semibold text-foreground">Comments</h2>
+        {comments.length > 0 && <h2 className="mb-2 text-lg font-semibold text-foreground">Comments</h2>}
         {user && (
           <Card className="mb-4">
             <CardContent className="p-4">

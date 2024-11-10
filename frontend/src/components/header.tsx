@@ -20,9 +20,15 @@ export function Header() {
             BetterNews
           </Link>
           <nav className="hidden items-center space-x-4 md:flex">
-            <Link className="hover:underline">new</Link>
-            <Link className="hover:underline">top</Link>
-            <Link className="hover:underline">submit</Link>
+            <Link to="/" search={{ sortBy: "recent", order: "desc" }} className="hover:underline">
+              new
+            </Link>
+            <Link to="/" search={{ sortBy: "points", order: "desc" }} className="hover:underline">
+              top
+            </Link>
+            <Link to="/submit" className="hover:underline">
+              submit
+            </Link>
           </nav>
         </div>
         <div className="hidden items-center space-x-4 md:flex">
@@ -61,13 +67,23 @@ export function Header() {
               <SheetDescription className="sr-only">Navigation</SheetDescription>
             </SheetHeader>
             <nav className="flex flex-col space-y-4">
-              <Link className="hover:underline" onClick={() => setIsOpen(false)}>
+              <Link
+                to="/"
+                search={{ sortBy: "recent", order: "desc" }}
+                className="hover:underline"
+                onClick={() => setIsOpen(false)}
+              >
                 new
               </Link>
-              <Link className="hover:underline" onClick={() => setIsOpen(false)}>
+              <Link
+                to="/"
+                search={{ sortBy: "points", order: "desc" }}
+                className="hover:underline"
+                onClick={() => setIsOpen(false)}
+              >
                 top
               </Link>
-              <Link className="hover:underline" onClick={() => setIsOpen(false)}>
+              <Link to="/submit" className="hover:underline" onClick={() => setIsOpen(false)}>
                 submit
               </Link>
               {user ? (

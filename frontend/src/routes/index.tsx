@@ -45,6 +45,17 @@ const postsInfiniteQueryOptions = ({ sortBy, order, author, site }: z.infer<type
 export const Route = createFileRoute("/")({
   component: HomeComponent,
   validateSearch: zodSearchValidator(homeSearchSchema),
+  loaderDeps: ({ search }) => ({ ...search }),
+  loader: ({ context, deps: { sortBy, order, author, site } }) => {
+    context.queryClient.ensureInfiniteQueryData(
+      postsInfiniteQueryOptions({
+        sortBy,
+        order,
+        author,
+        site,
+      }),
+    );
+  },
 });
 
 function HomeComponent() {
